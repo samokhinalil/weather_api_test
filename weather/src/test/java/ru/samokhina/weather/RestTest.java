@@ -66,8 +66,8 @@ public class RestTest {
 	}
 
 	@Test
-	@Description(value = "Тест проверяет, что при некорректно заданных координатах, ответ будет дан для Москвы")
-	public void testIncorrectLatAndLonParamsGivingMoscow() {
+	@Description(value = "Тест проверяет корректность результата запроса при некорректно заданных координатах")
+	public void testIncorrectLatAndLonParams() {
 		Response response = client.target(uri)
 				.queryParam("lat","ttt")
 				.queryParam("lon","ttt")
@@ -76,19 +76,37 @@ public class RestTest {
 				.header(yandexKeyName, yandexKeyValue)
 				.get();
 		String jsonResult = response.readEntity(String.class);
-		assertTrue(jsonResult.contains("Europe/Moscow"));
+
+		try {
+			Object obj = new JSONParser().parse(jsonResult);
+			JSONObject jo = (JSONObject) obj;
+			JSONObject info = (JSONObject) jo.get("info");
+			assertNotEquals(info.get("lat"), "ttt");
+			assertNotEquals(info.get("lon"), "ttt");
+		} catch (ParseException e) {
+			e.printStackTrace();
+		}
 	}
 
 	@Test
-	@Description(value = "Тест проверяет, что при незаполненных координатах местоположения, ответ будет дан для Москвы")
-	public void testEmptyLatAndLonParamsGivingMoscow() {
+	@Description(value = "Тест проверяет корректность результата запроса при незаполненных параметрах")
+	public void testEmptyLatAndLonParams() {
 		Response response = client.target(uri)
 				.request()
 				.header("Content-type", "application/json")
 				.header(yandexKeyName, yandexKeyValue)
 				.get();
 		String jsonResult = response.readEntity(String.class);
-		assertTrue(jsonResult.contains("Europe/Moscow"));
+
+		try {
+			Object obj = new JSONParser().parse(jsonResult);
+			JSONObject jo = (JSONObject) obj;
+			JSONObject info = (JSONObject) jo.get("info");
+			assertNotEquals(info.get("lat"), null);
+			assertNotEquals(info.get("lon"), null);
+		} catch (ParseException e) {
+			e.printStackTrace();
+		}
 	}
 
 	@Test
